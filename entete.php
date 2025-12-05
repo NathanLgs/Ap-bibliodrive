@@ -17,7 +17,7 @@
                 <?php include 'recherche.php';?>
             </div>
              <div class="col-sm-3 text-end">
-        <img src="4004113.png" alt="hautdroite" class="img-fluid" class="width: 400px";>
+        <img src="4004113.png" alt="hautdroite";>
     </div>
 </div>
         <div class="row">
