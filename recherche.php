@@ -1,4 +1,5 @@
-
+<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
+ 
 <nav class="navbar navbar-expand-lg navbar-dark px-4 navbar-custom">
   <a class="navbar-brand" href="accueil.php">BiblioDrive</a>
 

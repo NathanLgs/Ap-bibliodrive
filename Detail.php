@@ -10,16 +10,16 @@
 <body class="text-light bg-blur">
 
 <?php
-require_once('connexion.php'); // Connexion à la base de données
+require_once('connexion.php'); /* Connexion à la base de données */
 
-// Vérification que le paramètre 'nolivre' est présent dans l'URL
+/* Vérification que le paramètre 'nolivre' est présent dans l'URL */
 if (!isset($_GET["nolivre"])) {
     die("Erreur : aucun livre spécifié.");
 }
 
-$nolivre = (int)$_GET["nolivre"]; // Sécurisation du paramètre (conversion en entier)
+$nolivre = (int)$_GET["nolivre"]; /* Sécurisation du paramètre (conversion en entier) */
 
-// Préparation de la requête pour récupérer toutes les informations du livre
+/* Préparation de la requête pour récupérer toutes les informations du livre */
 $stmt = $connexion->prepare("
     SELECT nom, prenom, dateretour, detail, isbn13, anneeparution, photo, titre 
     FROM livre 
@@ -28,11 +28,11 @@ $stmt = $connexion->prepare("
     WHERE livre.nolivre = :nolivre
 ");
 
-$stmt->bindValue(":nolivre", $nolivre, PDO::PARAM_INT); // Liaison sécurisée du paramètre
+$stmt->bindValue(":nolivre", $nolivre, PDO::PARAM_INT); /* Liaison sécurisée du paramètre */
 $stmt->execute();
-$enregistrement = $stmt->fetch(PDO::FETCH_OBJ); // Récupération du résultat sous forme d'objet
+$enregistrement = $stmt->fetch(PDO::FETCH_OBJ); /* Récupération du résultat sous forme d'objet */
 
-// Vérification que le livre existe
+/* Vérification que le livre existe */
 if (!$enregistrement) {
     die("Livre introuvable.");
 }
@@ -42,18 +42,18 @@ if (!$enregistrement) {
 <div class="col-sm-8">
 
 <!-- Affichage des informations du livre -->
-<p>ISBN13 : <?= htmlspecialchars($enregistrement->isbn13) ?></p>
-<p>Auteur : <?= htmlspecialchars($enregistrement->prenom . " " . $enregistrement->nom) ?></p>
-<p>Titre : <?= htmlspecialchars($enregistrement->titre) ?> (<?= htmlspecialchars($enregistrement->anneeparution) ?>)</p>
+<p class="element">ISBN13 : <?= $enregistrement->isbn13 ?></p> 
+<p>Auteur : <?= $enregistrement->prenom . " " . $enregistrement->nom ?></p> 
+<p>Titre : <?= $enregistrement->titre ?> (<?= $enregistrement->anneeparution ?>)</p>
 
 <h4>Résumé du livre :</h4>
-<p><?= nl2br(htmlspecialchars($enregistrement->detail)) ?></p>
+<p><?= $enregistrement->detail ?></p>
 
 </div>
 
 <div class="col-sm-4">
     <!-- Affichage de la couverture du livre -->
-    <img src="./images/<?= htmlspecialchars($enregistrement->photo) ?>" class="d-block w-100" alt="Image de couverture">
+    <img src="./images/<?= $enregistrement->photo ?>" class="d-block w-100" alt="Image de couverture">
 </div>
 </div>
 </body>

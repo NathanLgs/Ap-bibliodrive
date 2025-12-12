@@ -1,29 +1,33 @@
+/* NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE */
 
 
-
-    /* Fond flou responsive */
         body.bg-blur {
             position: relative;
             min-height: 100vh;
-            overflow-x: hidden;
-        }
+            overflow-x: hidden;}
 
-        body.bg-blur::before {
+        body.bg-blur::before/* fond css flou + posisition*/ {
             content: "";
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url("fond.jpg"); /* ← mets ton image ici */
+            background-image: url("fond.jpg");
             background-size: cover;
             background-position: center;
             filter: blur(10px);
             transform: scale(1.1); /* évite les bords visibles */
-            z-index: -1; /* reste derrière le contenu */
-        }
+            z-index: -1; /* reste derrière le contenu */}
 
           .navbar-custom {
-      background-color: rgba(33, 37, 41, 0.75); /* gris sombre 75% opaque */
-      border-radius: 12px;                     /* coins arrondis */
-    }
+      background-color: rgba(33, 37, 41, 0.75); 
+      border-radius: 12px;}
+
+        .livre-card {
+    background-color: rgba(128, 128, 128, 0.75); /* gris 75% opaque */
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    color: white; /* texte visible sur fond gris */
+}

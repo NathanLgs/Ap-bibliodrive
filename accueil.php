@@ -1,3 +1,4 @@
+<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +21,7 @@
             </div>
 
             <div  class="col-sm-3 text-end">
-                <img src="hautdroite.png" alt="image" style="opacity: 0.75;">
+                <img src="bibliodriveimage2.png" alt="image" style="opacity: 0.75;">
             </div>
         </div>
 
