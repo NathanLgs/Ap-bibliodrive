@@ -1,4 +1,10 @@
+<?php
+session_start();
+?>
 <!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

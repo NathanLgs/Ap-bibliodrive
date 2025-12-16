@@ -1,20 +1,23 @@
-<?php 
-require_once('connexion.php'); // Connexion à la base de données
+<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
+<?php
+require_once('connexion.php');
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <link href="style.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Liste des livres</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="style.css" rel="stylesheet">
 </head>
 
 <body class="text-light bg-blur">
 
-    <div class="container-fluid">
+<div class="container-fluid">
         
         <div class="row">
             <div class="col-sm-9">
@@ -22,78 +25,123 @@ require_once('connexion.php'); // Connexion à la base de données
             </div>
 
             <div  class="col-sm-3 text-end">
-                <img src="hautdroite.png" alt="image" style="opacity: 0.75">
+                <img src="bibliodriveimage2.png" alt="image" style="opacity: 0.75;">
             </div>
         </div>
 
         <div class="row mt-3">
             <div class="col-sm-9">
-                <div class="container mt-4">
 
-    <?php
-    /* Récupération du nom d'auteur depuis l'URL pour filtrer les livres*/
-    /* Exemple : lister_livres.php?nmbr=Hugo */
-    $auteur = isset($_GET['nmbr']) ? "%" . $_GET['nmbr'] . "%" : "%";
+<?php
+/* Filtre auteur */
+$auteur = isset($_GET['nmbr']) ? "%" . $_GET['nmbr'] . "%" : "%";
 
-    // Préparation de la requête SQL pour récupérer les livres et leur auteur
-    $stmt = $connexion->prepare("
-        SELECT livre.nolivre, titre, anneeparution, auteur.nom, photo
-        FROM livre
-        INNER JOIN auteur ON auteur.noauteur = livre.noauteur
-        WHERE auteur.nom LIKE :auteur
-    ");
-    $stmt->bindValue(":auteur", $auteur); // Liaison sécurisée du paramètre
-    $stmt->execute(); // Exécution de la requête
-    $stmt->setFetchMode(PDO::FETCH_OBJ); // On récupère les résultats sous forme d'objet
+/* Requête complète pour la modal (a regler !!) */
+$sql = "
+    SELECT 
+        livre.nolivre,
+        livre.titre,
+        livre.anneeparution,
+        livre.isbn13,
+        livre.detail,
+        livre.photo,
+        auteur.nom,
+        auteur.prenom
+    FROM livre
+    INNER JOIN auteur ON auteur.noauteur = livre.noauteur
+    WHERE auteur.nom LIKE :auteur
+";
 
-    $found = false; // Indicateur pour savoir si des livres sont trouvés
+$stmt = $connexion->prepare($sql);
+$stmt->bindValue(":auteur", $auteur);
+$stmt->execute();
+$stmt->setFetchMode(PDO::FETCH_OBJ);
 
-    // Début de la grille Bootstrap (responsive)
-    echo "<div class='row row-cols-1 row-cols-md-3 g-4'>";
+echo "<div class='row row-cols-1 row-cols-md-3 g-4'>";
 
-    // Boucle pour afficher tous les livres récupérés
-    while ($enregistrement = $stmt->fetch()) {
-        $found = true; // Au moins un livre est trouvé
-        $nolivre = $enregistrement->nolivre;
-        $titre = $enregistrement->titre;
-        $annee = $enregistrement->anneeparution;
-        $photo = $enregistrement->photo;
+while ($livre = $stmt->fetch()) {
 
-        echo "<div class='col'>"; // Colonne Bootstrap pour chaque livre
-        echo "  <div class='card text-light p-4 shadow' style='max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px''>"; // Carte Bootstrap sombre
-        if (!empty($photo)) {
-            // Si une image existe, on l'affiche
-            echo "<img src='images/$photo' class='card-img-top' alt='$titre'>";
-        } else {
-            // Sinon, on affiche un bloc gris "Pas d'image"
-            echo "<div class='card-img-top d-flex align-items-center justify-content-center' style='height:200px; background:#444;'>Pas d'image</div>";
-        }
-        echo "    <div class='card-body'>";
-        echo "      <h5 class='card-title'>$titre</h5>"; // Titre du livre
-        echo "      <p class='card-text'>Année : $annee</p>"; // Année de parution
-        echo "      <a href='detail.php?nolivre=$nolivre' class='btn btn-primary'>Voir le détail</a>"; // Bouton vers la page de détail
-        echo "    </div>";
-        echo "  </div>";
-        echo "</div>";
+    echo "<div class='col'>";
+    echo "<div class='card text-light p-4 shadow' style='max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px''>"; /* catre fond gris opacité(75%)(a metre dans le css)*/
+
+    /* Image */
+    if (!empty($livre->photo)) {
+        echo "<img src='images/" . htmlspecialchars($livre->photo) . "' class='card-img-top'>";
+    } else {
+        echo "<div class='card-img-top text-center p-5 bg-secondary'>Pas d'image</div>";
     }
 
-    echo "</div>"; // Fin de la grille Bootstrap
+    echo "<div class='card-body'>";
+    echo "<h5 class='card-title'>" . htmlspecialchars($livre->titre) . "</h5>";
+    echo "<p class='card-text'>Année : {$livre->anneeparution}</p>";
 
-    // Message si aucun livre n'est trouvé pour cet auteur
-    if (!$found) {
-        echo "<p class='text-warning mt-3'>Aucun livre trouvé pour cet auteur.</p>";
-    }
+    /* Bouton modal boostrap5 */
+    echo "
+        <button class='btn btn-primary'
+                data-bs-toggle='modal'
+                data-bs-target='#modal{$livre->nolivre}'>
+            Voir le détail
+        </button>
+    ";
+
+    echo "</div></div></div>";
+
     ?>
-</div>
-            </div>
 
-            <div class="col-sm-3">
-                <?php include 'formulaire.php'; ?>
+    <div class="modal fade"
+         id="modal<?= $livre->nolivre ?>"
+         tabindex="-1"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content bg-dark text-light">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <?= htmlspecialchars($livre->titre) ?>
+                    </h5>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+
+                        <div class="col-md-8">
+                            <p><strong>Auteur :</strong>
+                                <?= htmlspecialchars($livre->prenom . " " . $livre->nom) ?>
+                            </p>
+
+                            <p><strong>Année :</strong> <?= $livre->anneeparution ?></p>
+                            <p><strong>ISBN :</strong> <?= htmlspecialchars($livre->isbn13) ?></p>
+
+                            <h6>Résumé :</h6>
+                            <p><?= nl2br(htmlspecialchars($livre->detail)) ?></p>
+                        </div>
+
+                        <div class="col-md-4">
+                            <?php if (!empty($livre->photo)) : ?>
+                                <img src="images/<?= htmlspecialchars($livre->photo) ?>"
+                                     class="img-fluid rounded">
+                            <?php endif; ?>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
-
     </div>
 
-</body>
+<?php
+}
+echo "</div>";
+?>
+</div>
+    <div class="col-sm-3">
+                <?php include 'formulaire.php'; ?>
+            </div>
+    </div>
 
+</div>
+</body>
 </html>

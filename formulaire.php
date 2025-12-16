@@ -1,21 +1,103 @@
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-  <div class="card text-light p-4 shadow"
-       style="max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px;">
+<?php
+$erreur = "";
+
+// Déconnexion
+if (isset($_POST['btnSeDeconnecter'])) {
+    session_unset();
+    session_destroy();
     
-    <h2 class="text-center mb-4">Connexion</h2>
 
-    <form>
-      <div class="mb-3">
-        <label for="email" class="form-label">Adresse e-mail</label>
-        <input type="email" class="form-control" id="email" required>
-      </div>
+}
 
-      <div class="mb-3">
-        <label for="password" class="form-label">Mot de passe</label>
-        <input type="password" class="form-control" id="password" required>
-      </div>
+// Connexion
+if (isset($_POST['btnSeConnecter'])) {
+    $mel = trim($_POST['mel']);
+    $mot_de_passe = trim($_POST['mot_de_passe']);
 
-      <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+    if (!empty($mel) && !empty($mot_de_passe)) {
+        $stmt = $connexion->prepare(
+            "SELECT * FROM utilisateur 
+             WHERE mel = :mel 
+             AND motdepasse = :motdepasse"
+        );
+
+        $stmt->execute([
+            'mel' => $mel,
+            'motdepasse' => $mot_de_passe
+        ]);
+
+        $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($utilisateur) {
+            $_SESSION['connecte'] = true;
+            $_SESSION['utilisateur'] = [
+                'mel' => $utilisateur['mel'],
+                'nom' => $utilisateur['nom'],
+                'prenom' => $utilisateur['prenom'],
+                'adresse' => $utilisateur['adresse'],
+                'ville' => $utilisateur['ville'],
+                'codepostal' => $utilisateur['codepostal'],
+                'profil' => $utilisateur['profil']
+            ];
+
+            
+            exit;
+        } else {
+            $erreur = "Email ou mot de passe incorrect";
+        }
+    } else {
+        $erreur = "Tous les champs sont obligatoires";
+    }
+}
+?>
+
+<!-- HTML à partir d'ici -->
+<div class="card p-4 text-light shadow" style="background:#212529">
+
+<?php if (!empty($_SESSION['connecte'])): ?>
+
+    <h4 class="text-center mb-3">
+        <?= htmlspecialchars($_SESSION['utilisateur']['prenom']) ?>
+        <?= htmlspecialchars($_SESSION['utilisateur']['nom']) ?>
+    </h4>
+
+    <ul class="list-group mb-3">
+        <li class="list-group-item">Email : <?= htmlspecialchars($_SESSION['utilisateur']['mel']) ?></li>
+        <li class="list-group-item">Ville : <?= htmlspecialchars($_SESSION['utilisateur']['ville']) ?></li>
+        <li class="list-group-item">Profil : <?= htmlspecialchars($_SESSION['utilisateur']['profil']) ?></li>
+    </ul>
+
+    <form method="post">
+        <button name="btnSeDeconnecter" class="btn btn-danger w-100">
+            Se déconnecter
+        </button>
     </form>
-  </div>
+
+<?php else: ?>
+
+    <h4 class="text-center mb-3">Connexion</h4>
+
+    <?php if (!empty($erreur)): ?>
+        <div class="alert alert-danger"><?= $erreur ?></div>
+    <?php endif; ?>
+
+    <form method="post">
+        <div class="mb-3">
+            <label>Email</label>
+            <input type="email" name="mel" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Mot de passe</label>
+            <input type="password" name="mot_de_passe" class="form-control" required>
+        </div>
+        <button name="btnSeConnecter" class="btn btn-primary w-100">
+            Se connecter
+        </button>
+    </form>
+
+<?php endif; ?>
+
 </div>
+
+<?php
+ob_end_flush(); // Envoie le contenu du tampon de sortie
