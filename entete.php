@@ -1,7 +1,5 @@
-<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
- 
 <nav class="navbar navbar-expand-lg navbar-dark px-4 navbar-custom">
-  <a class="navbar-brand" href="acceuil.php">BiblioDrive</a>
+  <a class="navbar-brand" href="acceuil.php">BiblioDrive 📕</a>
 
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
     aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,12 +23,19 @@
         value="<?=  $auteur ?>"
       >
 
-      <button class="btn btn-primary btn-lg" type="submit">Recherche</button>
+      <button class="btn btn-primary btn-lg" type="submit">Recherche🔍</button>
     </form>
+
+    <!-- Bouton Panier -->
+    <?php if (!empty($_SESSION['connecte'])): ?>
+      <a href="panier.php" class="btn btn-danger btn-lg ms-3">
+        Panier 🛒
+        <?php 
+          $nbPanier = isset($_SESSION['panier']) ? count($_SESSION['panier']) : 0;
+          if ($nbPanier > 0) echo " ($nbPanier)";
+        ?>
+      </a>
+    <?php endif; ?>
 
   </div>
 </nav>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-

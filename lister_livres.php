@@ -63,7 +63,7 @@ echo "<div class='row row-cols-1 row-cols-md-3 g-4'>";
 while ($livre = $stmt->fetch()) {
 
     echo "<div class='col'>";
-    echo "<div class='card text-light p-4 shadow' style='max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px''>";
+    echo "<div class='card text-light p-4 shadow' style='max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px;'>";
 
     /* Image */
     if (!empty($livre->photo)) {
@@ -81,19 +81,16 @@ while ($livre = $stmt->fetch()) {
         <button class='btn btn-primary mb-2'
                 data-bs-toggle='modal'
                 data-bs-target='#modal{$livre->nolivre}'>
-            Voir le détail
+            Voir le détail 🗒️
         </button>
     ";
 
     /* Bouton Panier (visible seulement si connecté) */
     if (!empty($_SESSION['connecte'])) {
         echo "
-            <form method='post' action='panier.php'>
-                <input type='hidden' name='nolivre' value='{$livre->nolivre}'>
-                <button type='submit' name='btnAjouterPanier' class='btn btn-success w-100'>
-                    Ajouter au panier
-                </button>
-            </form>
+            <a href='panier.php?ajouter={$livre->nolivre}' class='btn btn-danger w-100' >
+                Ajouter au panier 🛒
+            </a>
         ";
     }
 
@@ -119,12 +116,12 @@ while ($livre = $stmt->fetch()) {
                     <div class="row">
 
                         <div class="col-md-8">
-                            <p><strong>Auteur :</strong>
+                            <p>Auteur :
                                 <?= $livre->prenom . " " . $livre->nom ?>
                             </p>
 
-                            <p><strong>Année :</strong> <?= $livre->anneeparution ?></p>
-                            <p><strong>ISBN :</strong> <?= $livre->isbn13 ?></p>
+                            <p>Année : <?= $livre->anneeparution ?></p>
+                            <p>ISBN : <?= $livre->isbn13 ?></p>
 
                             <h6>Résumé :</h6>
                             <p><?= $livre->detail ?></p>
