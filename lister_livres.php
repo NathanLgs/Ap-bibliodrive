@@ -1,5 +1,6 @@
 <!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
 <?php
+session_start();
 require_once('connexion.php');
 ?>
 
@@ -19,24 +20,24 @@ require_once('connexion.php');
 
 <div class="container-fluid">
         
-        <div class="row">
-            <div class="col-sm-9">
-                <?php include 'recherche.php'; ?>
-            </div>
-
-            <div  class="col-sm-3 text-end">
-                <img src="bibliodriveimage2.png" alt="image" style="opacity: 0.75;">
-            </div>
+    <div class="row">
+        <div class="col-sm-9">
+            <?php include 'entete.php'; ?>
         </div>
 
-        <div class="row mt-3">
-            <div class="col-sm-9">
+        <div  class="col-sm-3 text-end">
+            <img src="./images/bibliodriveimage2.png" alt="image" style="opacity: 0.75;">
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-sm-9">
 
 <?php
 /* Filtre auteur */
 $auteur = isset($_GET['nmbr']) ? "%" . $_GET['nmbr'] . "%" : "%";
 
-/* Requête complète pour la modal (a regler !!) */
+/* Requête complète pour la modal */
 $sql = "
     SELECT 
         livre.nolivre,
@@ -62,30 +63,41 @@ echo "<div class='row row-cols-1 row-cols-md-3 g-4'>";
 while ($livre = $stmt->fetch()) {
 
     echo "<div class='col'>";
-    echo "<div class='card text-light p-4 shadow' style='max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px''>"; /* catre fond gris opacité(75%)(a metre dans le css)*/
+    echo "<div class='card text-light p-4 shadow' style='max-width: 400px; width: 100%; background: rgba(33, 37, 41, 0.75); backdrop-filter: blur(4px); border: none; border-radius: 12px''>";
 
     /* Image */
     if (!empty($livre->photo)) {
-        echo "<img src='images/" . htmlspecialchars($livre->photo) . "' class='card-img-top'>";
+        echo "<img src='images/" . $livre->photo . "' class='card-img-top'>";
     } else {
         echo "<div class='card-img-top text-center p-5 bg-secondary'>Pas d'image</div>";
     }
 
     echo "<div class='card-body'>";
-    echo "<h5 class='card-title'>" . htmlspecialchars($livre->titre) . "</h5>";
+    echo "<h5 class='card-title'>" . $livre->titre . "</h5>";
     echo "<p class='card-text'>Année : {$livre->anneeparution}</p>";
 
-    /* Bouton modal boostrap5 */
+    /* Bouton modal bootstrap5 */
     echo "
-        <button class='btn btn-primary'
+        <button class='btn btn-primary mb-2'
                 data-bs-toggle='modal'
                 data-bs-target='#modal{$livre->nolivre}'>
             Voir le détail
         </button>
     ";
 
-    echo "</div></div></div>";
+    /* Bouton Panier (visible seulement si connecté) */
+    if (!empty($_SESSION['connecte'])) {
+        echo "
+            <form method='post' action='panier.php'>
+                <input type='hidden' name='nolivre' value='{$livre->nolivre}'>
+                <button type='submit' name='btnAjouterPanier' class='btn btn-success w-100'>
+                    Ajouter au panier
+                </button>
+            </form>
+        ";
+    }
 
+    echo "</div></div></div>";
     ?>
 
     <div class="modal fade"
@@ -98,7 +110,7 @@ while ($livre = $stmt->fetch()) {
 
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <?= htmlspecialchars($livre->titre) ?>
+                        <?= $livre->titre ?>
                     </h5>
                     <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -108,19 +120,19 @@ while ($livre = $stmt->fetch()) {
 
                         <div class="col-md-8">
                             <p><strong>Auteur :</strong>
-                                <?= htmlspecialchars($livre->prenom . " " . $livre->nom) ?>
+                                <?= $livre->prenom . " " . $livre->nom ?>
                             </p>
 
                             <p><strong>Année :</strong> <?= $livre->anneeparution ?></p>
-                            <p><strong>ISBN :</strong> <?= htmlspecialchars($livre->isbn13) ?></p>
+                            <p><strong>ISBN :</strong> <?= $livre->isbn13 ?></p>
 
                             <h6>Résumé :</h6>
-                            <p><?= nl2br(htmlspecialchars($livre->detail)) ?></p>
+                            <p><?= $livre->detail ?></p>
                         </div>
 
                         <div class="col-md-4">
                             <?php if (!empty($livre->photo)) : ?>
-                                <img src="images/<?= htmlspecialchars($livre->photo) ?>"
+                                <img src="images/<?= $livre->photo ?>"
                                      class="img-fluid rounded">
                             <?php endif; ?>
                         </div>
@@ -138,9 +150,9 @@ echo "</div>";
 ?>
 </div>
     <div class="col-sm-3">
-                <?php include 'formulaire.php'; ?>
-            </div>
+        <?php include 'formulaire.php'; ?>
     </div>
+</div>
 
 </div>
 </body>

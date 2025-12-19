@@ -1,4 +1,5 @@
 <?php
+
 $erreur = "";
 
 // Déconnexion
@@ -6,13 +7,14 @@ if (isset($_POST['btnSeDeconnecter'])) {
     session_unset();
     session_destroy();
     
+    echo '<meta http-equiv="refresh" content="0">';
 
 }
 
 // Connexion
 if (isset($_POST['btnSeConnecter'])) {
-    $mel = trim($_POST['mel']);
-    $mot_de_passe = trim($_POST['mot_de_passe']);
+    $mel = $_POST['mel'];
+    $mot_de_passe = $_POST['mot_de_passe'];
 
     if (!empty($mel) && !empty($mot_de_passe)) {
         $stmt = $connexion->prepare(
@@ -39,8 +41,8 @@ if (isset($_POST['btnSeConnecter'])) {
                 'codepostal' => $utilisateur['codepostal'],
                 'profil' => $utilisateur['profil']
             ];
-
-            
+            echo '<meta http-equiv="refresh" content="0">'; /* <----- alternative au header */
+exit;
             exit;
         } else {
             $erreur = "Email ou mot de passe incorrect";
@@ -51,20 +53,20 @@ if (isset($_POST['btnSeConnecter'])) {
 }
 ?>
 
-<!-- HTML à partir d'ici -->
+<!-- HTML  -->
 <div class="card p-4 text-light shadow" style="background:#212529">
 
 <?php if (!empty($_SESSION['connecte'])): ?>
 
     <h4 class="text-center mb-3">
-        <?= htmlspecialchars($_SESSION['utilisateur']['prenom']) ?>
-        <?= htmlspecialchars($_SESSION['utilisateur']['nom']) ?>
+        <?= $_SESSION['utilisateur']['prenom'] ?>
+        <?= $_SESSION['utilisateur']['nom'] ?>
     </h4>
 
     <ul class="list-group mb-3">
-        <li class="list-group-item">Email : <?= htmlspecialchars($_SESSION['utilisateur']['mel']) ?></li>
-        <li class="list-group-item">Ville : <?= htmlspecialchars($_SESSION['utilisateur']['ville']) ?></li>
-        <li class="list-group-item">Profil : <?= htmlspecialchars($_SESSION['utilisateur']['profil']) ?></li>
+        <li class="list-group-item">Email : <?= $_SESSION['utilisateur']['mel'] ?></li>
+        <li class="list-group-item">Ville : <?= $_SESSION['utilisateur']['ville'] ?></li>
+        <li class="list-group-item">Profil : <?= $_SESSION['utilisateur']['profil'] ?></li>
     </ul>
 
     <form method="post">
@@ -100,4 +102,4 @@ if (isset($_POST['btnSeConnecter'])) {
 </div>
 
 <?php
-ob_end_flush(); // Envoie le contenu du tampon de sortie
+
