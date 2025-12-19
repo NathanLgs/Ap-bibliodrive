@@ -62,9 +62,9 @@ if (isset($_POST['btnSeConnecter'])) {
     </h4>
 
     <ul class="list-group mb-3">
-        <li class="list-group-item">Email : <?= htmlspecialchars($_SESSION['utilisateur']['mel']) ?></li>
-        <li class="list-group-item">Ville : <?= htmlspecialchars($_SESSION['utilisateur']['ville']) ?></li>
-        <li class="list-group-item">Profil : <?= htmlspecialchars($_SESSION['utilisateur']['profil']) ?></li>
+        <li class="list-group-item">Email : <?= $_SESSION['utilisateur']['mel'] ?></li>
+        <li class="list-group-item">Ville : <?= $_SESSION['utilisateur']['ville'] ?></li>
+        <li class="list-group-item">Profil : <?= $_SESSION['utilisateur']['profil'] ?></li>
     </ul>
 
     <!-- Bouton pour modal de deco -->
