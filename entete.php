@@ -20,11 +20,24 @@
         id="nmbr"
         placeholder="Rechercher dans le catalogue (nom de l'auteur)" 
         aria-label="Recherche"
-        value="<?=  $auteur ?>"
+        value="<?= $auteur ?>"
       >
-
-      <button class="btn btn-primary btn-lg" type="submit">Recherche🔍</button>
+      <button class="btn btn-primary btn-lg" type="submit">Recherche 🔍</button>
     </form>
+
+    <!-- Bouton ADMIN : Ajouter un livre -->
+    <?php if (!empty($_SESSION['connecte']) && $_SESSION['utilisateur']['profil'] === 'admin'): ?>
+      <a href="ajouter_livre.php" class="btn btn-warning btn-lg ms-3">
+        ➕ Ajouter un livre
+      </a>
+    <?php endif; ?>
+
+    <!-- Bouton ADMIN : Ajouter un utilisateur -->
+    <?php if (!empty($_SESSION['connecte']) && $_SESSION['utilisateur']['profil'] === 'admin'): ?>
+      <a href="ajouter_utilisateur.php" class="btn btn-success btn-lg ms-3">
+        ➕ Ajouter un utilisateur
+      </a>
+    <?php endif; ?>
 
     <!-- Bouton Panier -->
     <?php if (!empty($_SESSION['connecte'])): ?>
