@@ -4,63 +4,62 @@ require_once 'connexion.php';
 $erreur = "";
 $success = "";
 
+/* Récupération des auteurs pour le select */
+$auteursStmt = $connexion->query("SELECT noauteur, prenom, nom FROM auteur ORDER BY nom ASC");
+$auteurs = $auteursStmt->fetchAll(PDO::FETCH_ASSOC);
+
 /* Traitement du formulaire */
 if (isset($_POST['btnAjouter'])) {
 
-    $nomAuteur = trim($_POST['nom_auteur'] ?? '');
-    $prenomAuteur = trim($_POST['prenom_auteur'] ?? '');
+    $noauteur = $_POST['noauteur'] ?? '';
     $titre = trim($_POST['titre'] ?? '');
     $isbn13 = trim($_POST['isbn13'] ?? '');
     $annee = $_POST['anneeparution'] ?? '';
     $detail = trim($_POST['detail'] ?? '');
 
-    if ($nomAuteur && $prenomAuteur && $titre && $isbn13 && $annee && $detail) {
+    if ($noauteur && $titre && $isbn13 && $annee && $detail) {
 
-        /* 1️⃣ Vérifier si l’auteur existe */
-        $stmt = $connexion->prepare(
-            "SELECT noauteur FROM auteur 
-             WHERE nom = :nom AND prenom = :prenom"
-        );
-        $stmt->execute([
-            'nom' => $nomAuteur,
-            'prenom' => $prenomAuteur
-        ]);
+        // -------------------- Gestion de l'image --------------------
+        $photo = null;
+        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $tmp_name = $_FILES['photo']['tmp_name'];
+            $filename = basename($_FILES['photo']['name']);
+            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        $auteur = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        /* 2️⃣ Sinon, l’ajouter */
-        if ($auteur) {
-            $noauteur = $auteur['noauteur'];
-        } else {
-            $stmt = $connexion->prepare(
-                "INSERT INTO auteur (nom, prenom)
-                 VALUES (:nom, :prenom)"
-            );
-            $stmt->execute([
-                'nom' => $nomAuteur,
-                'prenom' => $prenomAuteur
-            ]);
-
-            $noauteur = $connexion->lastInsertId();
+            $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+            if (in_array($extension, $allowed)) {
+                $newFilename = uniqid('livre_') . '.' . $extension;
+                $destination = __DIR__ . '/images/' . $newFilename;
+                if (move_uploaded_file($tmp_name, $destination)) {
+                    $photo = $newFilename;
+                } else {
+                    $erreur = "Erreur lors de l'upload de l'image.";
+                }
+            } else {
+                $erreur = "Extension de fichier non autorisée (jpg, jpeg, png, gif).";
+            }
         }
 
-        /* 3️⃣ Insertion du livre */
-        $stmt = $connexion->prepare(
-            "INSERT INTO livre
-            (noauteur, titre, isbn13, anneeparution, detail, dateajout, photo)
-            VALUES
-            (:noauteur, :titre, :isbn13, :annee, :detail, CURDATE(), NULL)"
-        );
+        if (!$erreur) {
+            // -------------------- Insertion du livre --------------------
+            $stmt = $connexion->prepare(
+                "INSERT INTO livre
+                (noauteur, titre, isbn13, anneeparution, detail, dateajout, photo)
+                VALUES
+                (:noauteur, :titre, :isbn13, :annee, :detail, CURDATE(), :photo)"
+            );
 
-        $stmt->execute([
-            'noauteur' => $noauteur,
-            'titre' => $titre,
-            'isbn13' => $isbn13,
-            'annee' => $annee,
-            'detail' => $detail
-        ]);
+            $stmt->execute([
+                'noauteur' => $noauteur,
+                'titre' => $titre,
+                'isbn13' => $isbn13,
+                'annee' => $annee,
+                'detail' => $detail,
+                'photo' => $photo
+            ]);
 
-        $success = "Livre ajouté avec succès ✅";
+            $success = "Livre ajouté avec succès ✅";
+        }
 
     } else {
         $erreur = "Tous les champs sont obligatoires";
@@ -71,14 +70,15 @@ if (isset($_POST['btnAjouter'])) {
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>AJOUT LIVRE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <link href="style.css" rel="stylesheet">
 </head>
 
 <body class="text-light bg-blur">
 
-<?php include 'entete.php'; ?>
+<?php include 'entete.php'; // Affiche la barre de menu spécifique profil ?>
 
 <div class="container mt-5 mb-5">
 
@@ -93,18 +93,20 @@ if (isset($_POST['btnAjouter'])) {
             <div class="alert alert-success"><?= $success ?></div>
         <?php endif; ?>
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
 
             <h5 class="mb-3">Auteur</h5>
 
-            <div class="mb-3">
-                <label class="form-label">Prénom de l’auteur</label>
-                <input type="text" name="prenom_auteur" class="form-control" required>
-            </div>
-
             <div class="mb-4">
-                <label class="form-label">Nom de l’auteur</label>
-                <input type="text" name="nom_auteur" class="form-control" required>
+                <label class="form-label">Sélectionnez un auteur existant</label>
+                <select name="noauteur" class="form-select" required>
+                    <option value="">-- Choisir un auteur --</option>
+                    <?php foreach ($auteurs as $a): ?>
+                        <option value="<?= $a['noauteur'] ?>">
+                            <?= $a['prenom'] . " " . $a['nom'] ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
             <h5 class="mb-3">Livre</h5>
@@ -127,6 +129,11 @@ if (isset($_POST['btnAjouter'])) {
             <div class="mb-4">
                 <label class="form-label">Description</label>
                 <textarea name="detail" class="form-control" rows="5" required></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Image du livre</label>
+                <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.gif">
             </div>
 
             <button name="btnAjouter" class="btn btn-primary btn-lg w-100">

@@ -1,3 +1,4 @@
+<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
 <nav class="navbar navbar-expand-lg navbar-dark px-4 navbar-custom">
   <a class="navbar-brand" href="acceuil.php">BiblioDrive 📕</a>
 
@@ -25,6 +26,7 @@
       <button class="btn btn-primary btn-lg" type="submit">Recherche 🔍</button>
     </form>
 
+    
     <!-- Bouton ADMIN : Ajouter un livre -->
     <?php if (!empty($_SESSION['connecte']) && $_SESSION['utilisateur']['profil'] === 'admin'): ?>
       <a href="ajouter_livre.php" class="btn btn-warning btn-lg ms-3">
@@ -39,6 +41,7 @@
       </a>
     <?php endif; ?>
 
+    
     <!-- Bouton Panier -->
     <?php if (!empty($_SESSION['connecte'])): ?>
       <a href="panier.php" class="btn btn-danger btn-lg ms-3">

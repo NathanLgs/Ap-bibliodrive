@@ -1,14 +1,15 @@
-<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
 <?php
 session_start();
 require_once('connexion.php');
 ?>
 
+<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Liste des livres</title>
+    <title>LISTE DES LIVRES</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -37,7 +38,7 @@ require_once('connexion.php');
 /* Filtre auteur */
 $auteur = isset($_GET['nmbr']) ? "%" . $_GET['nmbr'] . "%" : "%";
 
-/* Requête complète pour la modal */
+/* Requête complète pour la liste des livres */
 $sql = "
     SELECT 
         livre.nolivre,
@@ -47,9 +48,13 @@ $sql = "
         livre.detail,
         livre.photo,
         auteur.nom,
-        auteur.prenom
+        auteur.prenom,
+        emprunter.mel AS est_emprunte
     FROM livre
     INNER JOIN auteur ON auteur.noauteur = livre.noauteur
+    LEFT JOIN emprunter 
+        ON livre.nolivre = emprunter.nolivre
+        AND emprunter.dateretour IS NULL
     WHERE auteur.nom LIKE :auteur
 ";
 
@@ -87,11 +92,15 @@ while ($livre = $stmt->fetch()) {
 
     /* Bouton Panier (visible seulement si connecté) */
     if (!empty($_SESSION['connecte'])) {
-        echo "
-            <a href='panier.php?ajouter={$livre->nolivre}' class='btn btn-danger w-100' >
-                Ajouter au panier 🛒
-            </a>
-        ";
+        if (empty($livre->est_emprunte)) {
+            echo "
+                <a href='panier.php?ajouter={$livre->nolivre}' class='btn btn-danger w-100' >
+                    Ajouter au panier 🛒
+                </a>
+            ";
+        } else {
+            echo "<button class='btn btn-secondary w-100' disabled>Déjà emprunté</button>";
+        }
     }
 
     echo "</div></div></div>";
@@ -129,8 +138,7 @@ while ($livre = $stmt->fetch()) {
 
                         <div class="col-md-4">
                             <?php if (!empty($livre->photo)) : ?>
-                                <img src="images/<?= $livre->photo ?>"
-                                     class="img-fluid rounded">
+                                <img src="images/<?= $livre->photo ?>" class="img-fluid rounded">
                             <?php endif; ?>
                         </div>
 

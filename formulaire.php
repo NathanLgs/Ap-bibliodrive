@@ -1,11 +1,19 @@
 <?php
 
 $erreur = "";
-
-/* Déconnexion */
+?>
+<!-- NATHAN LE GALLAIS SIO1 RABELAIS 2025/2026 PROJET : BIBLIODRIVE -->
+<?php
+/*  DECONNEXION */
 if (isset($_POST['btnSeDeconnecter'])) {
+    /* Vider la table emprunter*/
+    $connexion->exec("DELETE FROM emprunter");
+
+    /* Détruire la session*/
     session_unset();
     session_destroy();
+
+    /* Rafraîchir la page*/
     echo '<meta http-equiv="refresh" content="0">';
     exit;
 }
@@ -57,8 +65,8 @@ if (isset($_POST['btnSeConnecter'])) {
 <?php if (!empty($_SESSION['connecte'])): ?>
 
     <h4 class="text-center mb-3">
-        <?= htmlspecialchars($_SESSION['utilisateur']['prenom']) ?> 
-        <?= htmlspecialchars($_SESSION['utilisateur']['nom']) ?>
+        <?= $_SESSION['utilisateur']['prenom'] ?> 
+        <?= $_SESSION['utilisateur']['nom'] ?>
     </h4>
 
     <ul class="list-group mb-3">
@@ -71,7 +79,6 @@ if (isset($_POST['btnSeConnecter'])) {
     <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal">
         Se déconnecter
     </button>
-
     <!-- Modal de deco -->
     <div class="modal fade" id="confirmLogoutModal" tabindex="-1" aria-labelledby="confirmLogoutLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -99,7 +106,7 @@ if (isset($_POST['btnSeConnecter'])) {
     <h4 class="text-center mb-3">Connexion</h4>
 
     <?php if (!empty($erreur)): ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($erreur) ?></div>
+        <div class="alert alert-danger"><?= $erreur ?></div>
     <?php endif; ?>
 
     <form method="post">

@@ -1,171 +1,173 @@
 <?php
 session_start();
 require_once('connexion.php');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANIER</title>
 
-// Vérifier si l'utilisateur est connecté
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body class="text-light bg-blur">
+
+    <div class="container-fluid">
+        
+        <div class="row">
+            <div class="col-sm-9">
+                <?php include 'entete.php'; ?>
+            </div>
+
+            <div  class="col-sm-3 text-end">
+                <img src="./images/bibliodriveimage2.png" alt="image" style="opacity: 0.75;">
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-sm-9">
+            <?php
+/* ---------------- CONNEXION ---------------- */
 if (empty($_SESSION['connecte'])) {
     header("Location: acceuil.php");
     exit;
 }
 
-$mel = $_SESSION['connecte'];
+/* ---------------- MAIL UTILISATEUR ---------------- */
+$mel = $_SESSION['mel'] ?? 'louis.martin@rabelais.com';
 
-// Initialiser le panier si nécessaire
+/* ---------------- PANIER ---------------- */
 if (!isset($_SESSION['panier'])) {
     $_SESSION['panier'] = [];
 }
 
-$message = '';
-
-// ----- AJOUT AU PANIER avec limite 5 livres ----- //
+/* ---------------- AJOUT ---------------- */
 if (isset($_GET['ajouter'])) {
-    $nolivre = intval($_GET['ajouter']);
-    if (!in_array($nolivre, $_SESSION['panier'])) {
-        if (count($_SESSION['panier']) >= 5) {
-            $message = "Vous ne pouvez pas ajouter plus de 5 livres dans le panier.";
-        } else {
-            $_SESSION['panier'][] = $nolivre;
-        }
-    }
-    header("Location: panier.php?msg=" . urlencode($message));
-    exit;
-}
-
-// ----- SUPPRIMER DU PANIER ----- //
-if (isset($_GET['supprimer'])) {
-    $nolivre = intval($_GET['supprimer']);
-    $_SESSION['panier'] = array_diff($_SESSION['panier'], [$nolivre]);
+    $_SESSION['panier'][] = $_GET['ajouter'];
     header("Location: panier.php");
     exit;
 }
 
-// ----- VALIDER LE PANIER ----- //
-if (isset($_GET['valider'])) {
-    // Compter les emprunts déjà en cours
-    $sql = "SELECT COUNT(*) FROM emprunter WHERE mel = :mel AND dateretour IS NULL";
-    $stmt = $connexion->prepare($sql);
-    $stmt->bindValue(":mel", $mel);
-    $stmt->execute();
-    $empruntsEnCours = $stmt->fetchColumn();
-
-    $nbPanier = count($_SESSION['panier']);
-
-    if ($empruntsEnCours + $nbPanier > 5) {
-        $message = "Vous ne pouvez pas emprunter plus de 5 livres à la fois. En cours : $empruntsEnCours, dans le panier : $nbPanier.";
-    } else {
-        // Préparer l'insertion dans la table emprunter
-        $sqlInsert = "INSERT INTO emprunter (mel, nolivre, dateemprunt, dateretour) VALUES (:mel, :nolivre, NOW(), NULL)";
-        $stmtInsert = $connexion->prepare($sqlInsert);
-
-        foreach ($_SESSION['panier'] as $nolivre) {
-            // Vérifier si le livre n'est pas déjà emprunté et non rendu
-            $stmtCheck = $connexion->prepare(
-                "SELECT COUNT(*) FROM emprunter WHERE mel = :mel AND nolivre = :nolivre AND dateretour IS NULL"
-            );
-            $stmtCheck->bindValue(":mel", $mel);
-            $stmtCheck->bindValue(":nolivre", $nolivre);
-            $stmtCheck->execute();
-
-            if ($stmtCheck->fetchColumn() == 0) {
-                $stmtInsert->bindValue(":mel", $mel);
-                $stmtInsert->bindValue(":nolivre", $nolivre);
-                $stmtInsert->execute();
-            }
-        }
-
-        // Vider le panier
-        $_SESSION['panier'] = [];
-        $message = "Panier validé avec succès. Bon emprunt !";
-    }
+/* ---------------- SUPPRESSION ---------------- */
+if (isset($_GET['supprimer'])) {
+    $_SESSION['panier'] = array_diff($_SESSION['panier'], [$_GET['supprimer']]);
+    header("Location: panier.php");
+    exit;
 }
 
+/* ---------------- VALIDATION ---------------- */
+if (isset($_GET['valider'])) {
+    foreach ($_SESSION['panier'] as $nolivre) {
+        // Vérifier si le livre est déjà emprunté
+        $res = $connexion->query("SELECT COUNT(*) FROM emprunter WHERE nolivre = $nolivre AND dateretour IS NULL");
+        $count = $res->fetchColumn();
 
-// Récupérer message depuis GET si redirection
-if (isset($_GET['msg'])) {
-    $message = $_GET['msg'];
+        if ($count == 0) {
+            // Livre disponible
+            $connexion->exec("
+                INSERT INTO emprunter (mel, nolivre, dateemprunt, dateretour)
+                VALUES ('$mel', $nolivre, CURDATE(), NULL)
+            ");
+        }
+        // Sinon, ne rien faire
+    }
+
+    $_SESSION['panier'] = [];
+    header("Location: panier.php");
+    exit;
 }
 ?>
+<div class="container mt-4">
+    <h2>Votre panier</h2>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Panier - BiblioDrive</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="style.css" rel="stylesheet">
-</head>
-<body class="text-light bg-blur">
+    <?php if (empty($_SESSION['panier'])): ?>
+        <p>Votre panier est vide.</p>
+        <a href="lister_livres.php" class="btn btn-primary">Retour au catalogue</a>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-9">
-            <?php include 'entete.php'; ?>
-        </div>
-        <div  class="col-sm-3 text-end">
-            <img src="./images/bibliodriveimage2.png" alt="image" style="opacity: 0.75;">
-        </div>
-    </div>
+    <?php else: ?>
 
-    <div class="row mt-3">
-        <div class="col-sm-9">
-        <h2 class="mb-4">Votre panier</h2>
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Auteur</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
 
-                <?php if ($message): ?>
-                    <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
-                <?php endif; ?>
+            <?php
+            $sql = "
+                SELECT livre.nolivre, livre.titre, auteur.nom, auteur.prenom
+                FROM livre
+                JOIN auteur ON auteur.noauteur = livre.noauteur
+                WHERE livre.nolivre IN (" . implode(',', $_SESSION['panier']) . ")
+            ";
+            $stmt = $connexion->query($sql);
 
-                <?php if (empty($_SESSION['panier'])): ?>
-                    <p>Votre panier est vide.</p>
-                    <a href="lister_livres.php" class="btn btn-primary">Retour au catalogue</a>
-                <?php else: ?>
-                    <table class="table table-dark table-striped align-middle">
-                        <thead>
-                            <tr>
-                                <th>Titre</th>
-                                <th>Auteur</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php
-                        // Récupérer les informations des livres dans le panier
-                        $nolivres = array_map('intval', $_SESSION['panier']);
-                        if (count($nolivres) > 0) {
-                            $sql = "
-                                SELECT livre.titre, auteur.nom, auteur.prenom, livre.nolivre
-                                FROM livre
-                                INNER JOIN auteur ON auteur.noauteur = livre.noauteur
-                                WHERE livre.nolivre IN (" . implode(',', $nolivres) . ")
-                            ";
-                            $stmt = $connexion->query($sql);
-                            while ($livre = $stmt->fetch(PDO::FETCH_OBJ)) {
-                                echo "<tr>";
-                                echo "<td>" . htmlspecialchars($livre->titre) . "</td>";
-                                echo "<td>" . htmlspecialchars($livre->prenom . " " . $livre->nom) . "</td>";
-                                echo "<td>";
-                                echo "<a href='panier.php?supprimer={$livre->nolivre}' class='btn btn-danger btn-sm'>Annuler❌</a>";
-                                echo "</td>";
-                                echo "</tr>";
-                            }
-                        }
-                        ?>
-                        </tbody>
-                    </table>
+            while ($livre = $stmt->fetch(PDO::FETCH_OBJ)) {
+                // Vérifier si déjà emprunté
+                $res = $connexion->query("SELECT COUNT(*) FROM emprunter WHERE nolivre = $livre->nolivre AND dateretour IS NULL");
+                $dejaEmprunte = $res->fetchColumn() > 0;
 
-                    <div class="mt-3">
-                        <a href="panier.php?valider=1" class="btn btn-success">Valider le panier</a>
-                        <a href="lister_livres.php" class="btn btn-secondary">Continuer vos recherches</a>
+                echo "<tr>";
+                echo "<td>{$livre->titre}</td>";
+                echo "<td>{$livre->prenom} {$livre->nom}</td>";
+                if ($dejaEmprunte) {
+                    echo "<td>Déjà emprunté ❌</td>";
+                } else {
+                    echo "<td>
+                            <a href='panier.php?supprimer={$livre->nolivre}' class='btn btn-danger btn-sm'>
+                               Annuler ❌
+                            </a>
+                          </td>";
+                }
+                echo "</tr>";
+            }
+            ?>
+
+            </tbody>
+        </table>
+
+        <!-- Bouton pour ouvrir le modal de confirmation -->
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmModal">
+            Valider le panier
+        </button>
+
+        <a href="lister_livres.php" class="btn btn-secondary">
+            Continuer vos recherches
+        </a>
+
+        <!-- Modal de confirmation -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-light">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmModalLabel">Confirmer la validation</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
-                <?php endif; ?>
+                    <div class="modal-body">
+                        Êtes-vous sûr de vouloir valider votre panier ?<br>
+                        Les livres déjà empruntés seront ignorés.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <a href="panier.php?valider=1" class="btn btn-success">Confirmer</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="col-sm-3">
-            <?php include 'formulaire.php'; ?>
-        </div>
-    </div>
+    <?php endif; ?>
 </div>
+
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
