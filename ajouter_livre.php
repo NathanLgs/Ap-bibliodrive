@@ -19,7 +19,7 @@ if (isset($_POST['btnAjouter'])) {
 
     if ($noauteur && $titre && $isbn13 && $annee && $detail) {
 
-        // -------------------- Gestion de l'image --------------------
+        //  ---- Gestion de l'image  ----
         $photo = null;
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
             $tmp_name = $_FILES['photo']['tmp_name'];
@@ -41,7 +41,7 @@ if (isset($_POST['btnAjouter'])) {
         }
 
         if (!$erreur) {
-            // -------------------- Insertion du livre --------------------
+            //  ---- Insertion du livre  ----
             $stmt = $connexion->prepare(
                 "INSERT INTO livre
                 (noauteur, titre, isbn13, anneeparution, detail, dateajout, photo)
@@ -78,7 +78,7 @@ if (isset($_POST['btnAjouter'])) {
 
 <body class="text-light bg-blur">
 
-<?php include 'entete.php'; // Affiche la barre de menu spécifique profil ?>
+<?php include 'header.php'; // Affiche la barre de menu spécifique profil ?>
 
 <div class="container mt-5 mb-5">
 
@@ -145,6 +145,7 @@ if (isset($_POST['btnAjouter'])) {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<?php include 'footer.php'; ?>
+
 </body>
 </html>

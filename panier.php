@@ -20,7 +20,7 @@ require_once('connexion.php');
         
         <div class="row">
             <div class="col-sm-9">
-                <?php include 'entete.php'; ?>
+                <?php include 'header.php'; ?>
             </div>
 
             <div  class="col-sm-3 text-end">
@@ -31,35 +31,35 @@ require_once('connexion.php');
         <div class="row mt-3">
             <div class="col-sm-9">
             <?php
-/* ---------------- CONNEXION ---------------- */
+/*  CONNEXION  */
 if (empty($_SESSION['connecte'])) {
     header("Location: acceuil.php");
     exit;
 }
 
-/* ---------------- MAIL UTILISATEUR ---------------- */
+/*  MAIL UTILISATEUR   */
 $mel = $_SESSION['mel'] ?? 'louis.martin@rabelais.com';
 
-/* ---------------- PANIER ---------------- */
+/*   PANIER   */
 if (!isset($_SESSION['panier'])) {
     $_SESSION['panier'] = [];
 }
 
-/* ---------------- AJOUT ---------------- */
+/*   AJOUT   */
 if (isset($_GET['ajouter'])) {
     $_SESSION['panier'][] = $_GET['ajouter'];
     header("Location: panier.php");
     exit;
 }
 
-/* ---------------- SUPPRESSION ---------------- */
+/*   SUPPRESSION   */
 if (isset($_GET['supprimer'])) {
     $_SESSION['panier'] = array_diff($_SESSION['panier'], [$_GET['supprimer']]);
     header("Location: panier.php");
     exit;
 }
 
-/* ---------------- VALIDATION ---------------- */
+/*   VALIDATION   */
 if (isset($_GET['valider'])) {
     foreach ($_SESSION['panier'] as $nolivre) {
         // Vérifier si le livre est déjà emprunté
@@ -167,7 +167,8 @@ if (isset($_GET['valider'])) {
 
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<?php include 'footer.php'; ?>
 
 </body>
+
 </html>

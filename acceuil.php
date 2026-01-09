@@ -21,7 +21,7 @@ session_start();
         
         <div class="row">
             <div class="col-sm-9">
-                <?php include 'entete.php'; ?>
+                <?php include 'header.php'; ?>
             </div>
 
             <div class="col-sm-3 text-end">
@@ -71,22 +71,11 @@ session_start();
 
             <div class="col-sm-3">
                 <?php include 'formulaire.php'; ?>
-
-                <!-- Zone explicative sous le formulaire -->
-                <div class="card p-3 mt-3 text-dark bg-light shadow-sm">
-                    <h5>Informations</h5>
-                    <p>
-                        Bienvenue sur <strong>BiblioDrive</strong> !<br>
-                        Connectez-vous pour ajouter des livres à votre panier et les emprunter. 
-                        credit : Projet de BTS sio a l'aide du cours , 'https://www.w3schools.com/' et de 'https://getbootstrap.com/'
-                        nathan LE GALLAIS bts sio 2025/2026
-                        RABELAIS
-                    </p>
-                </div>
             </div>
         </div>
 
     </div>
+<?php include 'footer.php'; ?>
 
 </body>
 </html>

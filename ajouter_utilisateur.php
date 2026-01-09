@@ -18,6 +18,9 @@ if (isset($_POST['btnAjouter'])) {
 
     if ($mel && $motdepasse && $nom && $prenom && $adresse && $ville && $codepostal && $profil) {
 
+        // 🔐 Hash du mot de passe
+        $motdepasse_hash = password_hash($motdepasse, PASSWORD_DEFAULT);
+
         $stmt = $connexion->prepare(
             "INSERT INTO utilisateur
             (mel, motdepasse, nom, prenom, adresse, ville, codepostal, profil)
@@ -27,7 +30,7 @@ if (isset($_POST['btnAjouter'])) {
 
         $stmt->execute([
             'mel' => $mel,
-            'motdepasse' => $motdepasse,
+            'motdepasse' => $motdepasse_hash, // ✅ hash stocké
             'nom' => $nom,
             'prenom' => $prenom,
             'adresse' => $adresse,
@@ -42,6 +45,7 @@ if (isset($_POST['btnAjouter'])) {
         $erreur = "Tous les champs sont obligatoires";
     }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +59,7 @@ if (isset($_POST['btnAjouter'])) {
 
 <body class="text-light bg-blur">
 
-<?php include 'entete.php'; ?>
+<?php include 'header.php'; ?>
 
 <div class="container mt-5 mb-5">
 
@@ -125,6 +129,6 @@ if (isset($_POST['btnAjouter'])) {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<?php include 'footer.php'; ?>
 </body>
 </html>
